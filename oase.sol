@@ -20,8 +20,7 @@ import "npm/@openzeppelin/contracts@v5.0.0/utils/cryptography/MessageHashUtils.s
  *      and if 1% (by value) is locked, it's approximately 369%, and so on.
  *
  *      NOTE: All percentage references are annual. Daily growth is approximated by dividing the annual growth parameter by 365.
- *      This means the actual compounded Annual Percentage Rate (APR) is an approximation. Adjustments may be
- *      needed for scenarios requiring precise exponent-based growth calculations.
+ *      This means the actual compounded Annual Percentage Rate (APR) is an approximation.
  */
 contract Oase is ERC20 {
     // ------------------------------------------------------------------------
@@ -36,11 +35,11 @@ contract Oase is ERC20 {
     /**
      * @dev Maximum number of days to process in a single _dailyDataUpdate call.
      */
-    uint256 private constant MAX_DAYS_TO_UPDATE = 370;
+    uint256 private constant MAX_DAYS_TO_UPDATE = 369;
 
     /**
      * @dev Start of contract in Unix time. For demonstration, set to block.timestamp 
-     *      at deployment, but you can hardcode if you have a known start date.
+     *      at deployment.
      */
     uint256 public immutable LAUNCH_TIME;
 
@@ -76,10 +75,13 @@ contract Oase is ERC20 {
     Globals public globals; // The single instance of our Globals struct in storage
 
     // ------------------------------------------------------------------------
-    // Structures / Storage for each saving
+    // Structures / Storage for daily share rate data
     // ------------------------------------------------------------------------
     struct DailyDataStore {
-        uint256 dayShareRate; // records what the shareRate was after that day's update
+        uint256 dayShareRate;         // records what the shareRate was after that day's update
+        uint256 dayLockedTokenSupply; // total tokens initially deposited and still locked after that day
+        uint256 dayTotalSharesLocked; // total shares locked after that day
+        uint256 dayLockedRatio;       // locked ratio (scaled by 1e8) after that day
     }
 
     mapping(uint256 => DailyDataStore) public dailyData;
@@ -254,12 +256,18 @@ contract Oase is ERC20 {
 
         // Process each day from dailyDataCount up to endDayForLoop
         for (uint256 currentDay = g._dailyDataCount; currentDay < endDayForLoop; currentDay++) {
-            // 1) Record the current shareRate in dailyData
+            // 1) Calculate the locked ratio before applying daily rate
+            uint256 lockedRatio = _getLockedRatio(g);
+            
+            // 2) Record the current state in dailyData
             dailyData[currentDay + 1] = DailyDataStore({
-                dayShareRate: g._shareRate
+                dayShareRate: g._shareRate,
+                dayLockedTokenSupply: g._lockedTokenSupply,
+                dayTotalSharesLocked: g._totalSharesLocked,
+                dayLockedRatio: lockedRatio
             });
 
-            // 2) Apply next day's rate adjustments
+            // 3) Apply next day's rate adjustments
             _applyDailyRate(g);
         }
 
