@@ -148,6 +148,15 @@ contract Oase is ERC20 {
         uint256 timestamp
     );
 
+    /**
+     * @dev Emitted when tokens are burned
+     */
+    event Burn(
+        address indexed account,
+        uint256 amount,
+        uint256 timestamp
+    );
+
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
@@ -555,6 +564,21 @@ contract Oase is ERC20 {
      */
     function getUserSavings(address user) external view returns (SavingStore[] memory) {
         return savingsLists[user];
+    }
+
+    /**
+     * @dev Allows users to permanently burn their own tokens, reducing the total supply.
+     *      This improves the locked ratio for all savers, as the circulating supply decreases
+     *      while locked tokens remain unchanged.
+     * @param amount The amount of tokens to burn from the caller's balance
+     */
+    function burn(uint256 amount) external {
+        require(amount > 0, "Oase: Burn amount must be greater than 0");
+        require(balanceOf(msg.sender) >= amount, "Oase: Insufficient balance to burn");
+        
+        _burn(msg.sender, amount);
+        
+        emit Burn(msg.sender, amount, block.timestamp);
     }
 
     /**
