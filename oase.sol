@@ -79,9 +79,6 @@ contract Oase is ERC20 {
     // ------------------------------------------------------------------------
     struct DailyDataStore {
         uint256 dayShareRate;         // records what the shareRate was after that day's update
-        uint256 dayLockedTokenSupply; // total tokens initially deposited and still locked after that day
-        uint256 dayTotalSharesLocked; // total shares locked after that day
-        uint256 dayLockedRatio;       // locked ratio (scaled by 1e8) after that day
     }
 
     mapping(uint256 => DailyDataStore) public dailyData;
@@ -265,18 +262,12 @@ contract Oase is ERC20 {
 
         // Process each day from dailyDataCount up to endDayForLoop
         for (uint256 currentDay = g._dailyDataCount; currentDay < endDayForLoop; currentDay++) {
-            // 1) Calculate the locked ratio before applying daily rate
-            uint256 lockedRatio = _getLockedRatio(g);
-            
-            // 2) Record the current state in dailyData
+            // 1) Record the current shareRate in dailyData
             dailyData[currentDay + 1] = DailyDataStore({
-                dayShareRate: g._shareRate,
-                dayLockedTokenSupply: g._lockedTokenSupply,
-                dayTotalSharesLocked: g._totalSharesLocked,
-                dayLockedRatio: lockedRatio
+                dayShareRate: g._shareRate
             });
 
-            // 3) Apply next day's rate adjustments
+            // 2) Apply next day's rate adjustments
             _applyDailyRate(g);
         }
 
