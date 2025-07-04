@@ -210,6 +210,7 @@ contract Oase is ERC20 {
      */
     function _globalsCacheSnapshot(GlobalsCache memory g, GlobalsCache memory gSnapshot)
         private
+        pure
     {
         gSnapshot._shareRate         = g._shareRate;
         gSnapshot._dailyDataCount    = g._dailyDataCount;
