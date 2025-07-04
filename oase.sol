@@ -171,6 +171,18 @@ contract Oase is ERC20 {
     }
 
     // ------------------------------------------------------------------------
+    // ERC20 Overrides
+    // ------------------------------------------------------------------------
+
+    /**
+     * @dev Returns the number of decimals used to get its user representation.
+     * Overrides the default 18 decimals to use 8 decimals.
+     */
+    function decimals() public view virtual override returns (uint8) {
+        return 8;
+    }
+
+    // ------------------------------------------------------------------------
     // GlobalsCache load/sync
     // ------------------------------------------------------------------------
 
@@ -407,7 +419,8 @@ contract Oase is ERC20 {
      */
     function saveStart(uint256 newSavedTokens) external {
         require(newSavedTokens > 0, "Oase: Must save more than 0");
-        require(newSavedTokens >= 1 * 10**18, "Oase: Minimum save is 1 token");
+        require(newSavedTokens >= 1 * 10**8, "Oase: Minimum save is 1 token");
+        require(newSavedTokens < 2**72, "Oase: Amount too large for event packing");
         // use balanceOf from ERC20
         require(balanceOf(msg.sender) >= newSavedTokens, "Oase: insufficient balance");
         require(savingsLists[msg.sender].length < 100, "Oase: User has reached the maximum number of savings");
@@ -428,6 +441,7 @@ contract Oase is ERC20 {
         // shares = tokens * 1e8 / shareRate
         uint256 newSavingShares = (newSavedTokens * 1e8) / g._shareRate;
         require(newSavingShares > 0, "Oase: Amount too small for current share rate");
+        require(newSavingShares < 2**72, "Oase: Shares too large for event packing");
 
         // Now that we know the shares are valid, burn the tokens
         // Use inherited _burn instead of custom storage
