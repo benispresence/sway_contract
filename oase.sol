@@ -198,11 +198,10 @@ contract Oase is ERC20 {
      */
     function _globalsCacheSnapshot(GlobalsCache memory g, GlobalsCache memory gSnapshot)
         private
-        view
     {
         gSnapshot._shareRate         = g._shareRate;
         gSnapshot._dailyDataCount    = g._dailyDataCount;
-        gSnapshot._lockedTokenSupply = globals.lockedTokenSupply; // Snapshot total tokens locked
+        gSnapshot._lockedTokenSupply = g._lockedTokenSupply; // Snapshot total tokens locked
         gSnapshot._totalSharesLocked = g._totalSharesLocked; // Snapshot total shares locked
         gSnapshot._currentDay        = g._currentDay;
     }
