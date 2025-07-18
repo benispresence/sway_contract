@@ -590,7 +590,16 @@ contract Oase is ERC20 {
 
         if (signature.length > 0) {
             // Case with signature: Recover the eligible address from the signature
-            bytes32 messageHash = keccak256(abi.encode(msg.sender, id, amount));
+            // Include all relevant parameters to prevent replay attacks across contracts, chains, and time windows
+            bytes32 messageHash = keccak256(abi.encode(
+                msg.sender, 
+                id, 
+                amount, 
+                mintingStartDate,
+                mintingEndDate,
+                block.chainid,
+                address(this)
+            ));
             bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(messageHash);
             eligibleAddress = ECDSA.recover(ethSignedMessageHash, signature);
         } else {
