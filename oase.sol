@@ -151,7 +151,7 @@ contract Oase is ERC20 {
     // Constructor
     // ------------------------------------------------------------------------
     constructor(bytes32 _merkleRoot) 
-        ERC20("Oase", "OASE")  // Name and Symbol via OpenZeppelin's constructor
+        ERC20("Sway", "SWAY")  // Name and Symbol via OpenZeppelin's constructor
     {
         merkleRoot = _merkleRoot;
         LAUNCH_TIME = block.timestamp;
